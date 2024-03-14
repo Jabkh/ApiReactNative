@@ -1,25 +1,26 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
-const CartScreen = ({ route }) => {
-  const navigation = useNavigation(); // Obtenir l'objet de navigation
-
-  // Vérifiez si route.params est défini et contient les données du panier
-  const cartItems = route.params && route.params.cart ? route.params.cart : [];
+const CartScreen = ({ navigation, route }) => {
+  // Utilisation de l'état local pour stocker les éléments du panier
+  const [cartItems, setCartItems] = useState([]);
 
   // Fonction pour supprimer un élément du panier
   const removeFromCart = index => {
     const updatedCart = [...cartItems];
     updatedCart.splice(index, 1);
-    // Mise à jour des paramètres de la route avec le nouveau panier
+    setCartItems(updatedCart);
+    // Mettre à jour les paramètres de navigation avec le nouveau panier
     navigation.setParams({ cart: updatedCart });
   };
 
+  // mettre à jour les éléments du panier lorsque les paramètres de route changent
   useEffect(() => {
-    // Mettre à jour les paramètres de la route lorsque le panier change
-    navigation.setParams({ cart: cartItems });
-  }, [cartItems, navigation]);
+    if (route.params && route.params.cart) {
+      setCartItems(route.params.cart);
+    }
+  }, [route.params]);
 
   return (
     <View style={styles.container}>
@@ -37,6 +38,10 @@ const CartScreen = ({ route }) => {
         )}
         keyExtractor={(item, index) => index.toString()}
       />
+      {/* Bouton de retour */}
+      <TouchableOpacity onPress={() => navigation.goBack()}>
+        <Text style={styles.goBackButton}>Retour</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -71,6 +76,11 @@ const styles = StyleSheet.create({
   removeButton: {
     color: 'red',
     marginLeft: 10,
+  },
+  goBackButton: {
+    fontSize: 18,
+    color: 'blue',
+    marginTop: 20,
   },
 });
 
