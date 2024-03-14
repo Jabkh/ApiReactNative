@@ -1,26 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useSelector, useDispatch } from 'react-redux';
+import { removeFromCart } from '../slices/pokemonSlice'; // Assurez-vous d'importer la bonne action
 
-const CartScreen = ({ navigation, route }) => {
-  // Utilisation de l'état local pour stocker les éléments du panier
-  const [cartItems, setCartItems] = useState([]);
+const CartScreen = ({ navigation }) => {
+  const dispatch = useDispatch();
+  const cartItems = useSelector(state => state.pokemon.cart); // Utilisez le sélecteur approprié pour extraire les éléments du panier
 
-  // Fonction pour supprimer un élément du panier
-  const removeFromCart = index => {
-    const updatedCart = [...cartItems];
-    updatedCart.splice(index, 1);
-    setCartItems(updatedCart);
-    // Mettre à jour les paramètres de navigation avec le nouveau panier
-    navigation.setParams({ cart: updatedCart });
+  const handleRemoveFromCart = index => {
+    dispatch(removeFromCart(index)); // Dispatch l'action pour supprimer un élément du panier
   };
-
-  // mettre à jour les éléments du panier lorsque les paramètres de route changent
-  useEffect(() => {
-    if (route.params && route.params.cart) {
-      setCartItems(route.params.cart);
-    }
-  }, [route.params]);
 
   return (
     <View style={styles.container}>
@@ -31,7 +21,7 @@ const CartScreen = ({ navigation, route }) => {
           <View style={styles.item}>
             <Image source={{ uri: item.image }} style={styles.image} />
             <Text style={styles.name}>{item.name}</Text>
-            <TouchableOpacity onPress={() => removeFromCart(index)}>
+            <TouchableOpacity onPress={() => handleRemoveFromCart(index)}>
               <Text style={styles.removeButton}>Enlever</Text>
             </TouchableOpacity>
           </View>

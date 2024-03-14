@@ -1,60 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Button } from 'react-native';
-import axios from 'axios';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchPokemons,addPokedex } from '../slices/pokemonSlice';
 import PokemonCard from './PokemonCard';
 
 const PokeList = ({ navigation }) => {
-  const [pokemonData, setPokemonData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [cart, setCart] = useState([]);
+  const dispatch = useDispatch();
+  const pokemonData = useSelector(state => state.pokemon.pokemons);
+  const loading = useSelector(state => state.pokemon.loading);
 
   useEffect(() => {
-    const fetchPokemonData = async () => {
-      try {
-        const response = await axios.get('https://pokeapi.co/api/v2/pokemon?limit=151');
-        const pokemonList = response.data.results;
-        const pokemonDetails = await Promise.all(
-          pokemonList.map(async pokemon => {
-            const pokemonResponse = await axios.get(pokemon.url);
-            return {
-              name: pokemonResponse.data.name,
-              image: pokemonResponse.data.sprites.front_default,
-            };
-          })
-        );
-        setPokemonData(pokemonDetails);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching Pokémon data:', error);
-        setLoading(false);
-      }
-    };
-
-    fetchPokemonData();
-  }, []);
+    dispatch(fetchPokemons());
+  }, [dispatch]);
 
   const handleSelect = pokemon => {
-    setCart([...cart, pokemon]);
-  };
-
-  // Fonction pour naviguer vers l'écran du panier
-  const navigateToCart = () => {
-    navigation.navigate('Pokedex', { cart });
+    dispatch(addPokedex(pokemon));
+    console.log('Pokemon selected:', pokemon);
   };
 
   return (
     <View style={styles.container}>
-    <Button title="Pokedex" onPress={navigateToCart} />
+      <Button title="Pokedex" onPress={() => navigation.navigate('Pokedex')} />
       {loading ? (
         <Text>Loading...</Text>
       ) : (
-        <ScrollView contentContainerStyle={styles.scrollView} horizontal={false}>
+        <ScrollView contentContainerStyle={styles.scrollView}>
           <View style={styles.row}>
-            {pokemonData.map((pokemon, index) => (
+            {pokemonData && pokemonData.map((pokemon, index) => (
               <PokemonCard
                 key={index}
                 name={pokemon.name}
-                image={pokemon.image}
+                image={pokemon.sprites.front_default}
                 onSelect={() => handleSelect(pokemon)}
               />
             ))}
